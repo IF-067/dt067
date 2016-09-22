@@ -71,6 +71,15 @@
     },
     "jquery": {
       "main": "./dist/jquery.min.js"
+    },
+    "angular-toArrayFilter": {
+      "main": "toArrayFilter.js"
+    },
+    "angular-mocks": {
+      "main": "angular-mocks.js"
+    },
+    "angular-chart.js": {
+      "main": "angular-chart.js"
     }
   }
 }

@@ -29,7 +29,9 @@ module.exports = function() {
             js: 'app.min.js',
             jsSrc: build + 'js/app.min.js',
             css: 'styles.min.css',
-            cssSrc: build + 'css/styles.min.css'
+            cssSrc: build + 'css/styles.min.css',
+            vendorcss: "vendor.min.css",
+            vendorjs: "vendor.min.js"
         },
 
         /*** Bower locations ***/

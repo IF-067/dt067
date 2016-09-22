@@ -6,6 +6,7 @@ var config = require('./gulp.config')();
 var args = require('yargs').argv;
 var del = require('del');
 var runSequence = require('run-sequence');
+var bowerFiles = require('main-bower-files');
 
 // ***** development tasks *****
 
@@ -93,7 +94,6 @@ gulp.task('watch', function () {
     }));
 });
 
-
 // ***** production tasks ******
 
 gulp.task('minifyCSS', function() {
@@ -120,19 +120,50 @@ gulp.task('minifyJS', ['templateCache'], function() {
         .pipe(gulp.dest(config.build + 'js'));
 });
 
+gulp.task('vendorCSS', function() {
+ log("Concating bower's css");
+
+ return gulp.src(bowerFiles())
+ .pipe($.plumber())
+ .pipe($.filter("**/*.css"))
+ .pipe($.concat(config.optimized.vendorcss))
+ .pipe(gulp.dest(config.build + "css"));
+ });
+
+ gulp.task('vendorJS', function() {
+ log("Concating bower's js");
+
+ return gulp.src(bowerFiles())
+ .pipe($.plumber())
+ .pipe($.filter("**/*.js"))
+ .pipe($.concat(config.optimized.vendorjs))
+ .pipe(gulp.dest(config.build + "js"));
+ });
+
+/////////////////////////////////////////////////////////
+
 gulp.task('inject-prod', ['minifyCSS', 'minifyJS'], function() {
     log('Injecting bower"s css-, js- files and app application"s minified css-, js-files into the html');
-    var options = config.getWiredepDefaultOptions();
-    var wiredep = require('wiredep').stream;
     return gulp.src(config.index)
-        .pipe($.inject(gulp.src([config.optimized.cssSrc, config.optimized.jsSrc], {read: false}), {relative: true}))
-        .pipe(wiredep(options))
+
+        .pipe($.htmlReplace({
+            "css": ["css/" + config.optimized.vendorcss, "css/" + config.optimized.css],
+            "js": ["js/" + config.optimized.vendorjs, "js/" + config.optimized.js]
+        }))
+
         .pipe(gulp.dest(config.build));
+});
+
+gulp.task('fonts', ['copyFonts'], function() {
+    log('Copying fonts');
+    return gulp.src(bowerFiles())
+        .pipe($.filter(["**/*.eot", "**/*.ttf", "**/*.svg", "**/*.woff", "**/*.woff2"]))
+        .pipe(gulp.dest(config.build + "fonts"));
 });
 
 gulp.task('prod', function() {
     log('Building production');
-    runSequence('clean', 'image', 'copyFonts', 'inject-prod');
+    runSequence('clean', 'image', 'fonts', 'vendorJS', 'vendorCSS', 'inject-prod');
 });
 
 // ***** functions *****
